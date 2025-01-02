@@ -1,20 +1,13 @@
-import { Editor } from '@/components/editor/Editor'
-import Header from '@/components/Header'
+
+import CollaborativeRoom from '@/components/CollaborativeRoom'
 import React from 'react'
 
-const page = () => {
+const Document = () => {
     return (
-        <div>
-
-            <Header>
-                <div className='flex w-fit items-center justify-center gap-2'>
-                    <p className='document-title'>This is a fake document title</p>
-                </div>
-            </Header>
-
-            <Editor />
-        </div>
+        <main className='flex flex-col w-full items-center'>
+            <CollaborativeRoom/>
+        </main>
     )
 }
 
-export default page
+export default Document
