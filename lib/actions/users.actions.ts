@@ -2,26 +2,29 @@
 import { clerkClient } from "@clerk/nextjs/server"
 import { parseStringify } from "../utils";
 
-export const getClerkUsers = async ({userIds}: {userIds: string[]}) => {
+export const getClerkUsers = async ({ userIds }: { userIds: string[]}) => {
     try {
-        const users = await clerkClient.users.getUserList({
-            userId: userIds
+        // Use getUserList instead of getList
+        const { data } = await (await clerkClient()).users.getUserList({
+            emailAddress: userIds,
         });
 
-        const usersData = users.map((user: any) => ({
+        if (!Array.isArray(data)) {
+            throw new Error('Expected data to be an array');
+        }
+
+        const users = data.map((user) => ({
             id: user.id,
-            name: `${user.firstName} ${user.lastName}`,
+            name: `${user.firstName} ${user.lastName}`, 
             email: user.emailAddresses[0].emailAddress,
             avatar: user.imageUrl,
         }));
 
-        const sortedUsers = userIds.map((id: string) => 
-            usersData.find((user: any) => user.id === id)
-        );
+        const sortedUsers = userIds.map((email) => users.find((user) => user.email === email));
 
         return parseStringify(sortedUsers);
     } catch (error) {
-        console.log("Error fetching users", error);
-        return [];
+        console.log(`Error fetching users: ${error}`);
+        return null;
     }
 }
