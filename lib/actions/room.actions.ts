@@ -5,6 +5,7 @@ import {nanoid} from 'nanoid' // For generating unique room IDs
 import { liveblocks } from '../liveblocks'; // Liveblocks client
 import { revalidatePath } from 'next/cache'; // For revalidating Next.js cache
 import { getAccessType, parseStringify } from '../utils'; // Utility for parsing/stringifying data
+import { redirect } from 'next/navigation';
 
 /*
 A room in this context is a collaborative workspace created using Liveblocks.
@@ -112,7 +113,21 @@ export const updateDocumentAccess = async ({roomId , email , userType , updatedB
         })
 
         if(room){
-                // TODO : 
+                
+            const noticationId =  nanoid();
+
+            await liveblocks.triggerInboxNotification({
+                userId : email,
+                kind : '$documentAccess',
+                subjectId : noticationId,
+                activityData : {
+                    userType,
+                    title : `You have been granted ${userType} access to a document by ${updatedBy.name}`,
+                    updatedBy:updatedBy.name,
+                    avatar : updatedBy.avatar,
+                    email : updatedBy.email
+                }
+            })
         }
 
         revalidatePath(`/documents/${roomId}`);
@@ -143,5 +158,16 @@ export const removeCollaborator = async ({roomId , email } : {roomId : string , 
 
     } catch (error) {
         console.log("Error happened while removing a collaborator ", error);
+    }
+}
+
+
+export const deleteDocument = async (roomId : string) => {
+    try {
+        await liveblocks.deleteRoom(roomId);
+        revalidatePath('/');
+        redirect('/');
+    } catch (error) {
+        console.log("Error happened while deleting a room ", error);
     }
 }
