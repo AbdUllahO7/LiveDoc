@@ -4,7 +4,7 @@
 import {nanoid} from 'nanoid' // For generating unique room IDs
 import { liveblocks } from '../liveblocks'; // Liveblocks client
 import { revalidatePath } from 'next/cache'; // For revalidating Next.js cache
-import { parseStringify } from '../utils'; // Utility for parsing/stringifying data
+import { getAccessType, parseStringify } from '../utils'; // Utility for parsing/stringifying data
 
 /*
 A room in this context is a collaborative workspace created using Liveblocks.
@@ -13,11 +13,11 @@ It represents a shared document/canvas where multiple users can collaborate in r
 Key aspects of a room:
 1. Each room has a unique ID generated using nanoid
 2. Contains metadata like:
-   - Creator's ID and email
-   - Room title
+    - Creator's ID and email
+    - Room title
 3. Has access control:
-   - Creator gets write access by default
-   - Other users' access can be configured
+    - Creator gets write access by default
+    - Other users' access can be configured
 4. Enables real-time collaboration features through Liveblocks
 */
 
@@ -64,8 +64,6 @@ export const getDocument = async ({roomId , userId} : {roomId : string , userId 
     try {
         const room = await liveblocks.getRoom(roomId);
 
-        // TODO: Bring this back when we have a way to check if the user has access to the room
-
         const hasAccess = Object.keys(room.usersAccesses).includes(userId);
         if(!hasAccess) {
             throw new Error("You don't have access to this room");
@@ -99,5 +97,51 @@ export const getDocuments = async (email : string) => {
 
     } catch (error) {
         console.log("Error happened while fetching a rooms", error);
+    }
+}
+
+export const updateDocumentAccess = async ({roomId , email , userType , updatedBy } : ShareDocumentParams) => {
+    try {
+
+        const usersAccesses : RoomAccesses = {
+            [email]:getAccessType(userType) as AccessType,
+        }
+
+        const room = await liveblocks.updateRoom(roomId , {
+            usersAccesses
+        })
+
+        if(room){
+                // TODO : 
+        }
+
+        revalidatePath(`/documents/${roomId}`);
+        return parseStringify(room);
+    } catch (error) {
+        console.log("Error happened while updating a room access ", error);
+    }
+
+}
+
+
+export const removeCollaborator = async ({roomId , email } : {roomId : string , email : string}) => {
+    try {
+        const room =  await  liveblocks.getRoom(roomId);
+
+        if(room.metadata.email === email) {
+            throw new Error("You can't remove the owner of the room");
+        }
+
+        const updatedRoom = await liveblocks.updateRoom(roomId , {
+            usersAccesses : {
+                [email] : null
+            }
+        })
+
+        revalidatePath(`/documents/${roomId}`);
+        return parseStringify(updatedRoom);
+
+    } catch (error) {
+        console.log("Error happened while removing a collaborator ", error);
     }
 }
