@@ -18,6 +18,9 @@ const AddDocumentBtn = ({userId , email} : AddDocumentBtnProps) => {
             console.log(error);
         }
     }
+
+
+
     return (
         <Button type='submit' onClick={addDocumentHandler} className='gradient-blue flex gap-1 shadow-md'>
             <Image 
