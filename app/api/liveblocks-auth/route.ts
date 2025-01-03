@@ -14,7 +14,7 @@ s * This API route handles authentication for Liveblocks real-time collaboration
  * 3. Creates a standardized user object with required fields
  * 4. Authenticates the user with Liveblocks
  */
-export async function POST(request: Request) {
+export async function POST() {
     // Get the current authenticated user from Clerk
     const clerkUser = await currentUser();      
 

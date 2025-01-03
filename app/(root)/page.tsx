@@ -40,7 +40,7 @@ const Home = async () => {
                   <AddDocumentBtn userId={clerkUser.id} email={clerkUser.emailAddresses[0].emailAddress}/>
                 </div>
                 <ul className='document-ul'>
-                  {roomDocuments.data.map(({id, metadata, createdAt}: any) => (
+                  {roomDocuments.data.map(({id, metadata, createdAt}: { id: string, metadata: { title: string }, createdAt: string }) => (
                     <li key={id} className='document-list-item'>
                           <Link href={`/documents/${id}`} className='flex flex-1 items-center gap-4'>
                             <div className='hidden rounded-md bg-dark-500 p-2 sm:block'>
